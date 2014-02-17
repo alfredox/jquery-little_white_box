@@ -11,7 +11,8 @@
       defaults = {
         arrowSide: 'right',  // other values: bottom, left, top
         arrowPosition: 'center', // other values: top, bottom (for left and right side), left, right (for top and bottom side)
-        placeOnClick: false, // this options means that the object will be placed on the space of the click
+        placeOnClick: false, // this options means that the object will be placed on the space of the click,
+        headerString: '',  // this is the header to show in the elment, if '', does not show anything
         triggerSelector: null
       };
 
@@ -35,7 +36,14 @@
   Plugin.prototype = {
     init: function() {
       this.$el.hide().addClass('lwb-class') ;
-      
+
+      // FIXME options for the header should be null, undef, etc. (better options)
+      if (this.options.headerString != '') {
+        // adds header to element
+        // FIXME change the source of the image
+        this.$el.prepend("<header class='lwb-header'><h2>" + this.options.headerString + "<a href='#' class='lwb-close'><img src='http://localhost:3000/images/cerrar12x12.png?1392410160' /></a></h2></header>") ;
+      }
+
       // adds clases for arrows (and calculates position factors) depending on side and position
       // RIGHT
       if ( this.options.arrowSide == 'right') {
@@ -105,6 +113,9 @@
         $(this.options.triggerSelector).click(this.clickCallback.bind(this)) ;
       }
 
+      // adds close functionality to the icon
+      $('.lwb-close').click(this.closeCallback.bind(this)) ;
+
     },
     clickCallback: function (e) {
 
@@ -149,6 +160,10 @@
       // FIXME returns false to avoid propagation of event, perhaps should be optional via and option.
       return false ;
     },
+    closeCallback: function (e) {
+      this.hide() ;
+      return false ;
+    },
     showOn: function (x, y) {
       var left, top ;
       if ( this.options.arrowSide == 'right') {
@@ -170,6 +185,9 @@
   
       this.$el.css({left:left, top:top}) ;
       this.$el.show() ;
+    },
+    hide: function () {
+      this.$el.hide() ;
     }
   };
 
