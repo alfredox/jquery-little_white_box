@@ -13,7 +13,9 @@
         arrowPosition: 'center', // other values: top, bottom (for left and right side), left, right (for top and bottom side)
         placeOnClick: false, // this options means that the object will be placed on the space of the click,
         headerString: '',  // this is the header to show in the elment, if '', does not show anything
-        triggerSelector: null
+        triggerSelector: null,
+        closeOnHoverOut: false, // the window should close when detects a hover out.
+        closeOnClickOut: true
       };
 
   // The actual plugin constructor
@@ -113,9 +115,51 @@
         $(this.options.triggerSelector).click(this.clickCallback.bind(this)) ;
       }
 
+      if (!!this.options.closeOnHoverOut) {
+        this.$el.hover(this._hoverInCallback.bind(this), this._hoverOutCallback.bind(this)) ;
+      }
+
+      if (!!this.options.closeOnClickOut) {
+        // attaches event to the document mousedown event
+        // mousedown is used because it's a much less used event that click, so it's less likely
+        // that one element process it and stops the propagation.
+        $(document).mousedown(this._outsideClickCallback.bind(this)) ;
+      }
+
       // adds close functionality to the icon
       $('.lwb-close').click(this.closeCallback.bind(this)) ;
 
+    },
+    _outsideClickCallback: function (event) {
+      if( this.$el.is(":visible") ) {
+        // proceed only if visible and should hide.
+        if( ( event.target !== this.element )  && ($(event.target).parents().index(this.$el) == -1) ) {
+          if (!!this.options.triggerSelector) {
+            // if it has an triggerSelector option, it should also make sure the event did not come from there
+            var $triggerSelector = $(this.options.triggerSelector) ;
+            if( ( $triggerSelector.index(event.target) == -1)  && ($(event.target).parents().index($triggerSelector) == -1) ) {
+              this.close() ;
+            }
+          }
+          else {
+            // close already
+            this.close() ;
+          }
+        }
+      }
+    },
+    _hoverInCallback: function () {
+      // keeps track of time to avoid closing the window too fast.
+      this._hoverStartTime = (new Date).getTime() ;
+    },
+    _hoverOutCallback: function () {
+      if ( this._hoverStartTime ) {
+        if ( (new Date).getTime() - this._hoverStartTime > 300 )
+          this.close() ;
+      }
+      else {
+        this.close() ;
+      }
     },
     clickCallback: function (e) {
 
@@ -187,6 +231,9 @@
       this.$el.show() ;
     },
     hide: function () {
+      this.$el.hide() ;
+    },
+    close: function () {
       this.$el.hide() ;
     }
   };
