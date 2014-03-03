@@ -197,7 +197,15 @@
             x = offset.left + $target.outerWidth() / 2 ;
             y = offset.top + $target.outerHeight() ;
           }
-    
+
+          // special case, when this window is inside another, it should take
+          // into consideration the its offset.
+          var parentLwb = this.$el.parents('.lwb-class').first() ;
+          if ( parentLwb.length > 0 ) {
+            var parentOffset = parentLwb.offset() ;
+            x = x - parentOffset.left ;
+            y = y - parentOffset.top ;
+          }
           this.showOn(x, y ) ; // in this point calculation, let's find out if should be height for the $target.
         }
       }
@@ -226,7 +234,6 @@
         left = x - (this.totalWidth * this.horizontalFactor) ;
         top = y + 12 ;
       }
-  
       this.$el.css({left:left, top:top}) ;
       this.$el.show() ;
     },
