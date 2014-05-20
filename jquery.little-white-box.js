@@ -15,7 +15,9 @@
         headerString: '',  // this is the header to show in the elment, if '', does not show anything
         triggerSelector: null,
         closeOnHoverOut: false, // the window should close when detects a hover out.
-        closeOnClickOut: true
+        clickOutEvent: 'mousedown',   // the event to be used to detect the click out.
+        closeOnClickOut: true,
+        shouldCloseOnClickOut: undefined
       };
 
   // The actual plugin constructor
@@ -123,7 +125,7 @@
         // attaches event to the document mousedown event
         // mousedown is used because it's a much less used event that click, so it's less likely
         // that one element process it and stops the propagation.
-        $(document).mousedown(this._outsideClickCallback.bind(this)) ;
+        $(document).bind(this.options.clickOutEvent, this._outsideClickCallback.bind(this)) ;
       }
 
       // adds close functionality to the icon
@@ -138,12 +140,26 @@
             // if it has an triggerSelector option, it should also make sure the event did not come from there
             var $triggerSelector = $(this.options.triggerSelector) ;
             if( ( $triggerSelector.index(event.target) == -1)  && ($(event.target).parents().index($triggerSelector) == -1) ) {
-              this.close() ;
+              if (!!this.options.shouldCloseOnClickOut) {
+                var shouldClose = this.options.shouldCloseOnClickOut.call(this, event) ;
+                if (shouldClose)
+                  this.close() ;
+              }
+              else {
+                this.close() ;
+              }
             }
           }
           else {
-            // close already
-            this.close() ;
+            // not triggerSelector defined
+            if (!!this.options.shouldCloseOnClickOut) {
+              var shouldClose = this.options.shouldCloseOnClickOut.call(this, event) ;
+              if (shouldClose)
+                this.close() ;
+            }
+            else {
+              this.close() ;
+            }
           }
         }
       }
